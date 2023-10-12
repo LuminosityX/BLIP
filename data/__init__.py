@@ -13,10 +13,10 @@ from transform.randaugment import RandomAugment
 
 def create_dataset(dataset, config, min_scale=0.5):
     
-    normalize = transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+    normalize = transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))                     # CLIP关于图像的均值与方差 
 
     transform_train = transforms.Compose([                        
-            transforms.RandomResizedCrop(config['image_size'],scale=(min_scale, 1.0),interpolation=InterpolationMode.BICUBIC),
+            transforms.RandomResizedCrop(config['image_size'],scale=(min_scale, 1.0),interpolation=InterpolationMode.BICUBIC),      # interpolation: 插值方法 InterpolationMode.BICUBIC: 双三次插值法 不太知道为什么用这个
             transforms.RandomHorizontalFlip(),
             RandomAugment(2,5,isPIL=True,augs=['Identity','AutoContrast','Brightness','Sharpness','Equalize',
                                               'ShearX', 'ShearY', 'TranslateX', 'TranslateY', 'Rotate']),     

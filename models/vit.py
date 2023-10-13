@@ -100,7 +100,7 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
 
-        if use_grad_checkpointing:
+        if use_grad_checkpointing:                                                      # fairscale的一种封装手段，A friendlier wrapper for performing activation checkpointing
             self.attn = checkpoint_wrapper(self.attn)
             self.mlp = checkpoint_wrapper(self.mlp)
 
@@ -155,7 +155,7 @@ class VisionTransformer(nn.Module):
             Block(
                 dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
                 drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer,
-                use_grad_checkpointing=(use_grad_checkpointing and i>=depth-ckpt_layer)
+                use_grad_checkpointing=(use_grad_checkpointing and i>=depth-ckpt_layer)                           # ckpt_layer=4 大于4层的才use_grad_checkpointing
             )
             for i in range(depth)])
         self.norm = norm_layer(embed_dim)
@@ -277,12 +277,12 @@ def _load_weights(model: VisionTransformer, checkpoint_path: str, prefix: str = 
         block.norm2.weight.copy_(_n2p(w[f'{block_prefix}LayerNorm_2/scale']))
         block.norm2.bias.copy_(_n2p(w[f'{block_prefix}LayerNorm_2/bias']))
 
-            
+# state_dict['visual_encoder.pos_embed'] = interpolate_pos_embed(state_dict['visual_encoder.pos_embed'],model.visual_encoder)                
 def interpolate_pos_embed(pos_embed_checkpoint, visual_encoder):        
     # interpolate position embedding
     embedding_size = pos_embed_checkpoint.shape[-1]
     num_patches = visual_encoder.patch_embed.num_patches
-    num_extra_tokens = visual_encoder.pos_embed.shape[-2] - num_patches
+    num_extra_tokens = visual_encoder.pos_embed.shape[-2] - num_patches                   # 1 类似[CLS]这种
     # height (== width) for the checkpoint position embedding
     orig_size = int((pos_embed_checkpoint.shape[-2] - num_extra_tokens) ** 0.5)
     # height (== width) for the new position embedding
